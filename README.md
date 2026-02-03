@@ -1,25 +1,28 @@
 # Basement Bloomberg
 
-## Folder Structure
+This is a simple stock tracking application. It features a Go backend that provides a REST API for stock data and a modern frontend built with Astro.
+
+The backend is a simple Go server using the `chi` router, and the frontend is built with Astro. The two services are intended to be run concurrently during development.
+
+## Project Structure
+
 ```text
-my-project/
-├── backend/                # Go (Chi) source code
-│   ├── cmd/
-│   │   └── api/            # Entry point: main.go starts the server
-│   ├── internal/           # Private code (not importable by other projects)
-│   │   ├── api/            # Chi routes and middleware
-│   │   ├── service/        # Business logic (Usecases)
-│   │   ├── repository/     # Data storage logic (DB queries)
-│   │   └── model/          # Domain entities/structs
-│   ├── config/             # Config loading (env/yaml)
-│   └── go.mod
-├── frontend/               # Astro project (added later)
-│   ├── src/
+/
+├── backend/
+│   └── cmd/
+│       └── api/
+│           └── main.go
+├── frontend/
 │   ├── public/
-│   └── package.json
-├── docker/                 # Dockerfiles and orchestration
-│   ├── backend.Dockerfile
-│   └── frontend.Dockerfile
-├── .env                    # Environment variables
-└── docker-compose.yml      # Orchestrates Go, Astro, and Cloudflared
+│   │   ├── favicon.ico
+│   │   └── favicon.svg
+│   ├── src/
+│   │   └── pages/
+│   │       └── index.astro
+│   ├── .gitignore
+│   ├── astro.config.mjs
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── ...
+└── readme.md
 ```
