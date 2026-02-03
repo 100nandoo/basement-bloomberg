@@ -1,0 +1,51 @@
+---
+---
+<main  title="Stock Tracker">
+	<h1>Stock <span class="text-gradient">Tracker</span></h1>
+	
+	<div class="search-container">
+		<input type="text" id="tickerInput" placeholder="Enter Ticker (e.g. AAPL)" />
+		<button id="searchBtn">Fetch Data</button>
+	</div>
+
+	<div id="result">
+		<p>Enter a ticker to see magic happen.</p>
+	</div>
+</main>
+
+<script>
+	// This code runs in the BROWSER
+	const button = document.getElementById('searchBtn');
+	const input = document.getElementById('tickerInput') as HTMLInputElement;
+	const resultDiv = document.getElementById('result');
+
+	button?.addEventListener('click', async () => {
+		const ticker = input.value.toUpperCase();
+		if (!ticker) return;
+
+		resultDiv!.innerHTML = `<p>Loading data for ${ticker}...</p>`;
+
+		try {
+			const response = await fetch(`http://localhost:8080/api/stocks/${ticker}`);
+			const data = await response.json();
+
+			resultDiv!.innerHTML = `
+				<div class="card">
+					<h3>${data.symbol}</h3>
+					<p>Price: $${data.price}</p>
+					<p>Last Updated: ${new Date().toLocaleTimeString()}</p>
+				</div>
+			`;
+		} catch (error) {
+			resultDiv!.innerHTML = `<p style="color: red;">Error fetching data.</p>`;
+		}
+	});
+</script>
+
+<style>
+	main { margin: auto; padding: 2rem; max-width: 600px; font-family: sans-serif; }
+	.search-container { display: flex; gap: 10px; margin-bottom: 2rem; }
+	input { padding: 10px; flex-grow: 1; border: 1px solid #ccc; border-radius: 4px; }
+	button { padding: 10px 20px; background: #4f46e5; color: white; border: none; border-radius: 4px; cursor: pointer; }
+	.card { padding: 20px; border: 1px solid #eee; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+</style>
