@@ -1,12 +1,9 @@
-package main
+package rest
 
 import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
-	"net/http"
-	"net/url"
 
 	"github.com/google/go-querystring/query"
 )
@@ -21,8 +18,7 @@ const (
 func getPriceHistory(ticker string, params PriceHistoryQuery) (*PriceHistoryResponse, error) {
 	v, _ := query.Values(params)
 	apiURL := fmt.Sprintf("%s/v8/finance/chart/%s?%s", query2URL, ticker, v.Encode())
-
-	resp, err := http.Get(apiURL)
+	resp, err := GetClient().Get(apiURL)
 	if err != nil {
 		return nil, err
 	}
@@ -41,12 +37,12 @@ func getPriceHistory(ticker string, params PriceHistoryQuery) (*PriceHistoryResp
 	return &history, nil
 }
 
-// getQuoteSummary retrieves a summary of various data modules for a given stock symbol.
-func getQuoteSummary(ticker string, params QuoteSummaryQuery) (*QuoteSummaryResponse, error) {
+// GetQuoteSummary retrieves a summary of various data modules for a given stock symbol.
+func GetQuoteSummary(ticker string, params QuoteSummaryQuery) (*QuoteSummaryResponse, error) {
 	v, _ := query.Values(params)
 	apiURL := fmt.Sprintf("%s/v10/finance/quoteSummary/%s?%s", query2URL, ticker, v.Encode())
 
-	resp, err := http.Get(apiURL)
+	resp, err := GetClient().Get(apiURL)
 	if err != nil {
 		return nil, err
 	}
@@ -56,6 +52,7 @@ func getQuoteSummary(ticker string, params QuoteSummaryQuery) (*QuoteSummaryResp
 	if err != nil {
 		return nil, err
 	}
+	// fmt.Printf("API URL: %s\nResponse Body: %s\n", apiURL, string(body))
 
 	var summary QuoteSummaryResponse
 	if err := json.Unmarshal(body, &summary); err != nil {
@@ -70,7 +67,7 @@ func getFundamentals(ticker string, params FundamentalsQuery) (*FundamentalsResp
 	v, _ := query.Values(params)
 	apiURL := fmt.Sprintf("%s/ws/fundamentals-timeseries/v1/finance/timeseries/%s?%s", query2URL, ticker, v.Encode())
 
-	resp, err := http.Get(apiURL)
+	resp, err := GetClient().Get(apiURL)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +91,7 @@ func getEarningsCalendar(ticker string, params EarningsCalendarQuery) (string, e
 	v, _ := query.Values(params)
 	apiURL := fmt.Sprintf("%s/calendar/earnings?%s", rootURL, v.Encode())
 
-	resp, err := http.Get(apiURL)
+	resp, err := GetClient().Get(apiURL)
 	if err != nil {
 		return "", err
 	}
@@ -108,63 +105,4 @@ func getEarningsCalendar(ticker string, params EarningsCalendarQuery) (string, e
 	// Note: The response is HTML. You would need a library like goquery to parse it.
 	// For demonstration, we're just returning the HTML as a string.
 	return string(body), nil
-}
-
-func main() {
-	// Example usage of the functions
-	// You can uncomment and run these examples.
-
-	// --- Get Price History ---
-	// historyParams := PriceHistoryQuery{
-	// 	Period1:        1609459200, // 2021-01-01
-	// 	Period2:        1640995200, // 2022-01-01
-	// 	Interval:       "1d",
-	// 	IncludePrePost: true,
-	// 	Events:         "div,splits",
-	// }
-	// history, err := getPriceHistory("AAPL", historyParams)
-	// if err != nil {
-	// 	log.Fatalf("Error getting price history: %v", err)
-	// }
-	// fmt.Printf("Price History for AAPL: %+v\n", history.Chart.Result[0].Meta)
-
-
-	// --- Get Quote Summary ---
-	// summaryParams := QuoteSummaryQuery{
-	// 	Modules:    "assetProfile,summaryDetail",
-	// 	CorsDomain: "finance.yahoo.com",
-	// 	Formatted:  false,
-	// 	Symbol:     "AAPL",
-	// }
-	// summary, err := getQuoteSummary("AAPL", summaryParams)
-	// if err != nil {
-	// 	log.Fatalf("Error getting quote summary: %v", err)
-	// }
-	// fmt.Printf("Quote Summary for AAPL: %+v\n", summary.QuoteSummary.Result[0].AssetProfile)
-
-
-	// --- Get Fundamentals ---
-	// fundParams := FundamentalsQuery{
-	// 	Symbol:  "AAPL",
-	// 	Type:    "annualNormalizedEBITDA,annualTaxEffectOfUnusualItems",
-	// 	Period1: 1609459200,
-	// 	Period2: 1640995200,
-	// }
-	// fundamentals, err := getFundamentals("AAPL", fundParams)
-	// if err != nil {
-	// 	log.Fatalf("Error getting fundamentals: %v", err)
-	// }
-	// fmt.Printf("Fundamentals for AAPL: %+v\n", fundamentals.Timeseries.Result[0])
-
-
-	// --- Get Earnings Calendar ---
-	// earningsParams := EarningsCalendarQuery{
-	// 	Symbol: "AAPL",
-	// 	Size:   5,
-	// }
-	// earningsHTML, err := getEarningsCalendar("AAPL", earningsParams)
-	// if err != nil {
-	// 	log.Fatalf("Error getting earnings calendar: %v", err)
-	// }
-	// fmt.Println("Earnings Calendar HTML for AAPL (first 500 chars):", earningsHTML[:500])
 }

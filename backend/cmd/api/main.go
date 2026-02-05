@@ -11,6 +11,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+
+	rest "github.com/100nandoo/basement-bloomberg/backend/internal/rest"
 )
 
 func main() {
@@ -43,13 +45,23 @@ func main() {
 
 		r.Get("/stocks/{ticker}", func(w http.ResponseWriter, r *http.Request) {
 			ticker := chi.URLParam(r, "ticker")
-			// Mock data
-			responseData := map[string]interface{}{
-				"symbol": ticker,
-				"price":  150.25,
+
+			// Use the rest package to get quote summary
+			params := rest.QuoteSummaryQuery{
+				Modules:    "assetProfile,summaryDetail,price", // Default modules
+				CorsDomain: "finance.yahoo.com",
+				Formatted:  false,
+				Symbol:     ticker,
 			}
+
+			summary, err := rest.GetQuoteSummary(ticker, params)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(responseData)
+			json.NewEncoder(w).Encode(summary)
 		})
 	})
 

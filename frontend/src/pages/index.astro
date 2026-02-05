@@ -1,51 +1,197 @@
 ---
+
 ---
-<main  title="Stock Tracker">
-	<h1>Stock <span class="text-gradient">Tracker</span></h1>
-	
-	<div class="search-container">
-		<input type="text" id="tickerInput" placeholder="Enter Ticker (e.g. AAPL)" />
-		<button id="searchBtn">Fetch Data</button>
-	</div>
 
-	<div id="result">
-		<p>Enter a ticker to see magic happen.</p>
-	</div>
-</main>
+<head>
+	<title>Basement Bloomberg - Stock Tracker</title>
+</head>
 
-<script>
-	// This code runs in the BROWSER
-	const button = document.getElementById('searchBtn');
-	const input = document.getElementById('tickerInput') as HTMLInputElement;
-	const resultDiv = document.getElementById('result');
+<body class="bg-base-200 min-h-screen">
+	<main class="container mx-auto px-4 max-w-2xl">
+		<!-- Search Hero -->
+		<div
+			class="card bg-base-100 shadow-md border border-base-content/5 mb-8"
+		>
+			<div class="card-body p-6">
+				<h2 class="card-title text-2xl mb-4">Stock Search</h2>
+				<p class="text-base-content/70 mb-6">
+					Enter a ticker symbol to fetch real-time stock data and
+					analytics.
+				</p>
 
-	button?.addEventListener('click', async () => {
-		const ticker = input.value.toUpperCase();
-		if (!ticker) return;
+				<div class="flex flex-col sm:flex-row gap-3">
+					<div class="relative grow">
+						<span
+							class="absolute inset-y-0 left-3 flex items-center text-base-content/50"
+						>
+							<span class="icon-[tabler--search] size-5"></span>
+						</span>
+						<input
+							type="text"
+							id="tickerInput"
+							class="input input-lg input-primary w-full pl-10 h-14"
+							placeholder="Enter Ticker (e.g. AAPL, TSLA)"
+						/>
+					</div>
+					<button
+						id="searchBtn"
+						class="btn btn-lg btn-primary h-14 px-8 shadow-lg shadow-primary/20"
+					>
+						Fetch Data
+					</button>
+				</div>
+			</div>
+		</div>
 
-		resultDiv!.innerHTML = `<p>Loading data for ${ticker}...</p>`;
+		<!-- Result Section -->
+		<div id="result" class="space-y-6">
+			<div
+				class="flex flex-col items-center justify-center p-12 text-center opacity-50 grayscale"
+			>
+				<span
+					class="icon-[tabler--click] size-16 mb-4 text-base-content/30"
+				></span>
+				<p class="text-lg font-medium">Ready to search</p>
+				<p class="text-sm">Enter a symbol above to get started</p>
+			</div>
+		</div>
+	</main>
 
-		try {
-			const response = await fetch(`/api/stocks/${ticker}`);
-			const data = await response.json();
+	<!-- FlyonUI Script -->
+	<script>
+		import "flyonui/dist/index.js";
+	</script>
+
+	<script>
+		// This code runs in the BROWSER
+		const button = document.getElementById("searchBtn");
+		const input = document.getElementById(
+			"tickerInput",
+		) as HTMLInputElement;
+		const resultDiv = document.getElementById("result");
+
+		button?.addEventListener("click", async () => {
+			const ticker = input.value.trim().toUpperCase();
+			if (!ticker) return;
 
 			resultDiv!.innerHTML = `
-				<div class="card">
-					<h3>${data.symbol}</h3>
-					<p>Price: $${data.price}</p>
-					<p>Last Updated: ${new Date().toLocaleTimeString()}</p>
+				<div class="flex flex-col items-center justify-center p-12 text-center">
+					<span class="loading loading-spinner loading-lg text-primary mb-4"></span>
+					<p class="text-lg font-medium animate-pulse">Fetching ${ticker} data...</p>
 				</div>
 			`;
-		} catch (error) {
-			resultDiv!.innerHTML = `<p style="color: red;">Error fetching data.</p>`;
-		}
-	});
-</script>
+
+			try {
+				const API_BASE = import.meta.env.DEV
+					? "http://localhost:8080"
+					: "";
+				const response = await fetch(
+					`${API_BASE}/api/stocks/${ticker}`,
+				);
+				if (!response.ok) throw new Error("Failed to fetch data");
+
+				const data = await response.json();
+				const result = data.quoteSummary.result[0];
+				if (!result) throw new Error("No data found");
+
+				const price = result.price;
+				const profile = result.assetProfile;
+				const summary = result.summaryDetail;
+
+				const isPositive = price.regularMarketChange >= 0;
+				const statusColor = isPositive ? "text-success" : "text-error";
+				const bgColor = isPositive
+					? "bg-success/10 border-success/20"
+					: "bg-error/10 border-error/20";
+				const sign = isPositive ? "+" : "";
+
+				resultDiv!.innerHTML = `
+					<div class="card bg-base-100 shadow-lg border border-base-content/5 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+						<!-- Header -->
+						<div class="p-6 border-b border-base-content/5 flex justify-between items-start">
+							<div>
+								<div class="flex items-center gap-3 mb-1">
+									<h3 class="text-3xl font-black">${price.symbol}</h3>
+									<span class="badge badge-outline badge-sm uppercase tracking-wider font-bold opacity-70">${price.quoteType}</span>
+								</div>
+								<p class="text-base-content/60 font-medium">${profile.longName || price.shortName}</p>
+								<p class="text-xs uppercase tracking-widest text-base-content/40 mt-1">${profile.industry} • ${profile.sector}</p>
+							</div>
+							<div class="text-right">
+								<p class="text-xs text-base-content/40 uppercase font-bold mb-1">Exchange</p>
+								<p class="font-bold">${price.exchangeName}</p>
+							</div>
+						</div>
+
+						<!-- Body -->
+						<div class="p-6">
+							<div class="flex flex-wrap items-center gap-8 mb-8">
+								<div class="stats stats-vertical sm:stats-horizontal bg-base-200/50 w-full sm:w-auto">
+									<div class="stat">
+										<div class="stat-title text-xs uppercase font-bold opacity-60">Market Price</div>
+										<div class="stat-value text-4xl font-black">$${price.regularMarketPrice.toFixed(2)}</div>
+										<div class="stat-desc font-bold ${statusColor}">
+											${sign}${price.regularMarketChange.toFixed(2)} (${sign}${price.regularMarketChangePercent.toFixed(2)}%)
+										</div>
+									</div>
+								</div>
+
+								<div class="flex gap-4 grow justify-around sm:justify-start">
+									<div>
+										<p class="text-xs text-base-content/40 uppercase font-bold mb-1">Day High</p>
+										<p class="text-xl font-bold">$${summary.regularMarketDayHigh.toFixed(2)}</p>
+									</div>
+									<div>
+										<p class="text-xs text-base-content/40 uppercase font-bold mb-1">Day Low</p>
+										<p class="text-xl font-bold">$${summary.regularMarketDayLow.toFixed(2)}</p>
+									</div>
+									<div>
+										<p class="text-xs text-base-content/40 uppercase font-bold mb-1">Volume</p>
+										<p class="text-xl font-bold">${(summary.regularMarketVolume / 1000000).toFixed(2)}M</p>
+									</div>
+								</div>
+							</div>
+
+							<div class="alert ${bgColor} border rounded-xl flex items-center gap-3 py-3 px-4">
+								<span class="icon-[tabler--info-circle] size-5 ${statusColor}"></span>
+								<p class="text-sm font-medium">As of ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()} ${price.exchangeTimezoneShortName}</p>
+							</div>
+						</div>
+					</div>
+				`;
+			} catch (error) {
+				resultDiv!.innerHTML = `
+					<div class="alert alert-error shadow-lg">
+						<span class="icon-[tabler--alert-triangle] size-6"></span>
+						<div>
+							<h3 class="font-bold">Error fetching data</h3>
+							<div class="text-xs">Please check the ticker symbol and try again.</div>
+						</div>
+					</div>
+				`;
+			}
+		});
+
+		// Trigger fetch on Enter key
+		input?.addEventListener("keypress", (e) => {
+			if (e.key === "Enter") button?.click();
+		});
+	</script>
+</body>
 
 <style>
-	main { margin: auto; padding: 2rem; max-width: 600px; font-family: sans-serif; }
-	.search-container { display: flex; gap: 10px; margin-bottom: 2rem; }
-	input { padding: 10px; flex-grow: 1; border: 1px solid #ccc; border-radius: 4px; }
-	button { padding: 10px 20px; background: #4f46e5; color: white; border: none; border-radius: 4px; cursor: pointer; }
-	.card { padding: 20px; border: 1px solid #eee; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+	/* Custom animations if needed beyond Tailwind */
+	@keyframes in {
+		from {
+			opacity: 0;
+			transform: translateY(10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+	.animate-in {
+		animation: in 0.5s ease-out forwards;
+	}
 </style>

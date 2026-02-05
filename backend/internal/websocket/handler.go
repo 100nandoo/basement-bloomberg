@@ -1,4 +1,4 @@
-package main
+package websocket
 
 import (
 	"fmt"
@@ -12,8 +12,8 @@ const (
 	wsURL = "wss://streamer.finance.yahoo.com/?version=2"
 )
 
-// streamLiveData connects to the WebSocket and streams live data.
-func streamLiveData(request LiveDataRequest) {
+// StreamLiveData connects to the WebSocket and streams live data.
+func StreamLiveData(request LiveDataRequest) {
 	u, _ := url.Parse(wsURL)
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
@@ -37,12 +37,4 @@ func streamLiveData(request LiveDataRequest) {
 		// For a real application, you would decode it using the .proto file.
 		fmt.Printf("recv: %s\n", message)
 	}
-}
-
-func main() {
-	// --- Stream Live Data ---
-	liveRequest := LiveDataRequest{
-		Subscribe: []string{"AAPL", "GOOG"},
-	}
-	streamLiveData(liveRequest)
 }

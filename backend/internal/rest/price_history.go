@@ -1,4 +1,4 @@
-package main
+package rest
 
 // PriceHistoryQuery represents the query parameters for the price history API
 type PriceHistoryQuery struct {

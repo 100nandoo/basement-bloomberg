@@ -1,4 +1,4 @@
-package main
+package rest
 
 // FundamentalsQuery represents the query parameters for the fundamentals API
 type FundamentalsQuery struct {
@@ -16,18 +16,18 @@ type FundamentalsResponse struct {
 				Symbol string `json:"symbol"`
 				Type   string `json:"type"`
 			} `json:"meta"`
-			Timestamp []int64 `json:"timestamp"`
+			Timestamp                     []int64 `json:"timestamp"`
 			AnnualTaxEffectOfUnusualItems []struct {
-				AsOfDate string `json:"asOfDate"`
+				AsOfDate      string `json:"asOfDate"`
 				ReportedValue struct {
-					Raw int64 `json:"raw"`
+					Raw int64  `json:"raw"`
 					Fmt string `json:"fmt"`
 				} `json:"reportedValue"`
 			} `json:"annualTaxEffectOfUnusualItems,omitempty"`
 			AnnualNormalizedEBITDA []struct {
-				AsOfDate string `json:"asOfDate"`
+				AsOfDate      string `json:"asOfDate"`
 				ReportedValue struct {
-					Raw int64 `json:"raw"`
+					Raw int64  `json:"raw"`
 					Fmt string `json:"fmt"`
 				} `json:"reportedValue"`
 			} `json:"annualNormalizedEBITDA,omitempty"`

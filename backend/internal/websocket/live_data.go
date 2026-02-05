@@ -1,4 +1,4 @@
-package main
+package websocket
 
 // LiveDataRequest represents the subscription message for the live data WebSocket
 type LiveDataRequest struct {
