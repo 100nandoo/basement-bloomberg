@@ -26,7 +26,7 @@
 		resultDiv!.innerHTML = `<p>Loading data for ${ticker}...</p>`;
 
 		try {
-			const response = await fetch(`http://localhost:8080/api/stocks/${ticker}`);
+			const response = await fetch(`/api/stocks/${ticker}`);
 			const data = await response.json();
 
 			resultDiv!.innerHTML = `

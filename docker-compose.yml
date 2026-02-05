@@ -1,0 +1,15 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: basement-bloomberg
+    restart: unless-stopped
+    ports:
+      - "8811:8080"
+    networks:
+      - basement-net
+
+networks:
+  basement-net:
+    driver: bridge
